@@ -63,12 +63,39 @@ dist/AI-Daily-Summary.exe
 
 ## 🎮 Cara Menggunakan EXE
 
-### 1. Jalankan EXE
+### 1. Setup API Key (Untuk AI Generation)
+
+**PENTING:** Jika ingin menggunakan AI untuk generate HTML/CSS, set API key dulu!
+
+**Cara 1: Environment Variable (Recommended)**
+```cmd
+# Set di Command Prompt sebelum run EXE
+set GEMINI_API_KEY=your-api-key-here
+AI-Daily-Summary.exe
+```
+
+**Cara 2: System Environment Variable (Permanent)**
+1. Tekan `Win + R` → ketik `sysdm.cpl` → Enter
+2. Tab "Advanced" → "Environment Variables"
+3. Klik "New" di User variables
+4. Variable name: `GEMINI_API_KEY`
+5. Variable value: `your-api-key-here`
+6. OK → OK
+7. Restart komputer (atau log off/on)
+8. Run EXE
+
+**Cara 3: Buat file `.env` (jika EXE support)**
+- Buat file `.env` di folder yang sama dengan EXE
+- Isi: `GEMINI_API_KEY=your-api-key-here`
+
+📖 **Panduan lengkap:** Lihat [GEMINI_SETUP.md](GEMINI_SETUP.md)
+
+### 2. Jalankan EXE
 - Double-click `AI-Daily-Summary.exe`
 - Aplikasi akan berjalan di background
 - Icon akan muncul di system tray (dekat jam)
 
-### 2. Akses Menu
+### 3. Akses Menu
 - **Right-click** icon di system tray
 - Menu akan muncul dengan opsi:
   - Status: Running/Stopped
@@ -76,13 +103,14 @@ dist/AI-Daily-Summary.exe
   - Start Worker / Stop Worker
   - Exit
 
-### 3. Monitor Status
+### 4. Monitor Status
 - Klik "Show Status" untuk melihat log
 - Window akan menampilkan:
   - Status worker (Running/Stopped)
   - Last update time
   - Log messages
   - Tombol Start/Stop
+  - Info apakah AI generation berhasil atau pakai template
 
 ## ⚙️ Konfigurasi
 

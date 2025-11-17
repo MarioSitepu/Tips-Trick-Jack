@@ -56,8 +56,12 @@ def build_exe():
         "--hidden-import=PIL",
         "--hidden-import=PIL._tkinter_finder",
         "--hidden-import=tkinter",
+        "--hidden-import=google.generativeai",  # Gemini API
+        "--hidden-import=google.generativeai.types",  # Gemini types
+        "--hidden-import=google.api_core",  # Google API core
         "--collect-all=pystray",  # Collect all pystray data
         "--collect-all=PIL",  # Collect all PIL data
+        "--collect-all=google.generativeai",  # Collect all Gemini data
         str(script_path)
     ]
     
@@ -97,7 +101,9 @@ def main():
         print("1. Find AI-Daily-Summary.exe in the 'dist' folder")
         print("2. Copy it to your desired location")
         print("3. Make sure 'data' folder exists in the same directory")
-        print("4. Run the .exe file")
+        print("4. Set GEMINI_API_KEY environment variable (jika pakai AI)")
+        print("5. Run the .exe file")
+        print("\n📖 Untuk setup API key, lihat GEMINI_SETUP.md")
     else:
         print("\n❌ Build failed. Please check the errors above.")
 

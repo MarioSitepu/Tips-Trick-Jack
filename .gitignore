@@ -26,6 +26,13 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+.env.*
+*.env
+
+# API Keys (jangan commit!)
+*_api_key.txt
+*_key.txt
+secrets.txt
 
 # Jangan ignore data/ karena perlu di-commit
 # !data/

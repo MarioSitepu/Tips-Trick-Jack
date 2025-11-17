@@ -81,7 +81,9 @@ ai-daily-project/
    - ✅ Start/Stop worker dari tray menu
    - ✅ Auto-generate summary setiap 30 menit
 
-📖 **Panduan lengkap:** Lihat [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md)
+📖 **Panduan lengkap:** 
+- [BUILD_INSTRUCTIONS.md](BUILD_INSTRUCTIONS.md) - Panduan build EXE
+- [EXE_SETUP.md](EXE_SETUP.md) - **Setup EXE dengan Gemini API** ⭐
 
 ---
 
@@ -161,7 +163,9 @@ GitHub Actions sudah dikonfigurasi di `.github/workflows/auto-commit.yml`.
    STYLE = "gradient"  # "gradient", "solid", "glassmorphism", dll
    ```
 
-📖 **Panduan lengkap:** Lihat [AI_SETUP.md](AI_SETUP.md)
+📖 **Panduan lengkap:** 
+- [AI_SETUP.md](AI_SETUP.md) - Setup AI providers
+- [GEMINI_SETUP.md](GEMINI_SETUP.md) - **Panduan lengkap setup Gemini API Key** ⭐
 
 ### 4. Kustomisasi AI Worker
 

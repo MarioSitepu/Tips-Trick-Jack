@@ -282,13 +282,26 @@ def generate_with_gemini(date_str, theme="modern", style="gradient"):
         genai.configure(api_key=api_key)
         
         # Gunakan Gemini 2.5 Flash (atau fallback ke versi lain)
-        try:
-            model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        except:
+        models_to_try = [
+            'gemini-2.5-flash',        # Stable Gemini 2.5 Flash (Recommended)
+            'gemini-2.0-flash-001',    # Stable Gemini 2.0 Flash
+            'gemini-2.0-flash',        # Gemini 2.0 Flash
+            'gemini-flash-latest',     # Latest Flash
+        ]
+        
+        model = None
+        for model_name in models_to_try:
             try:
-                model = genai.GenerativeModel('gemini-1.5-flash')
-            except:
-                model = genai.GenerativeModel('gemini-pro')
+                model = genai.GenerativeModel(model_name)
+                # Test dengan simple request
+                model.generate_content("test", generation_config=genai.types.GenerationConfig(max_output_tokens=1))
+                break
+            except Exception as e:
+                # Try next model
+                continue
+        
+        if not model:
+            raise Exception("No available Gemini model found")
         
         prompt = f"""Generate a complete, modern HTML page with embedded CSS for a project dated {date_str}.
 
@@ -305,15 +318,46 @@ Requirements:
 
 Format: Return HTML with <style> tag inside <head> section."""
 
+        # Safety settings - allow more content
+        safety_settings = [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
+        ]
+        
         response = model.generate_content(
             prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.7,
-                max_output_tokens=2000,
-            )
+                max_output_tokens=4000,  # Increased for HTML/CSS
+            ),
+            safety_settings=safety_settings
         )
         
-        full_response = response.text
+        # Handle response properly
+        if not response.candidates:
+            raise Exception("No candidates in response")
+        
+        candidate = response.candidates[0]
+        
+        # Check finish reason
+        finish_reason = candidate.finish_reason
+        # 1 = STOP (success), 2 = MAX_TOKENS, 3 = SAFETY, 4 = RECITATION, 5 = OTHER
+        if finish_reason == 3:  # SAFETY
+            raise Exception("Content blocked by safety filter")
+        elif finish_reason == 4:  # RECITATION
+            raise Exception("Content blocked due to recitation")
+        
+        # Try to get text even if finish_reason is not STOP
+        try:
+            full_response = response.text
+        except:
+            # Fallback: try to get content from parts
+            if candidate.content and candidate.content.parts:
+                full_response = "".join([part.text for part in candidate.content.parts if hasattr(part, 'text')])
+            else:
+                raise Exception(f"Could not extract text. Finish reason: {finish_reason}")
         
         # Extract HTML and CSS
         html_content = extract_html_from_response(full_response)
