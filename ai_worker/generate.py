@@ -20,6 +20,10 @@ AI_PROVIDER = "gemini"  # "gemini", "openai", "ollama", "anthropic", atau "auto"
 THEME = "modern"  # "modern", "classic", "minimal", "dark", dll
 STYLE = "gradient"  # "gradient", "solid", "glassmorphism", dll
 
+# Konfigurasi Auto-Push ke GitHub
+AUTO_PUSH = True  # Set True untuk auto push ke GitHub setelah generate
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")  # Token untuk push (opsional)
+
 def generate_html_css_project(project_dir, date_str, use_ai=None, ai_provider=None, theme=None, style=None):
     """
     Generate HTML/CSS project menggunakan AI atau template fallback
@@ -287,6 +291,29 @@ Generated at **{now_str}**.
         f.write(summary)
     
     print(f"[{now_str}] Project created: {project_folder_name} ({html_path.name}, {css_path.name})")
+    
+    # Auto push ke GitHub jika enabled
+    if AUTO_PUSH:
+        try:
+            try:
+                from .git_helper import git_commit_and_push
+            except ImportError:
+                from git_helper import git_commit_and_push
+            
+            repo_path = base_dir
+            success, message = git_commit_and_push(
+                repo_path=repo_path,
+                files_to_add=["data/", "projects/"],
+                commit_message=f"🤖 AI update: New project {project_folder_name}",
+                token=GITHUB_TOKEN
+            )
+            
+            if success:
+                print(f"✅ Pushed to GitHub: {message}")
+            else:
+                print(f"⚠️ Push failed: {message}")
+        except Exception as e:
+            print(f"⚠️ Auto-push error: {str(e)}")
 
 if __name__ == "__main__":
     print("AI Worker started. Generating summary every 30 minutes...")

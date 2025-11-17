@@ -130,10 +130,19 @@ Ubah sesuai kebutuhan:
 
 ### Auto-Start dengan Windows
 
+**Cara Mudah (Recommended):**
+```bash
+# Double-click
+setup_startup.bat
+```
+
+**Atau manual:**
 1. Tekan `Win + R`
 2. Ketik `shell:startup`
 3. Copy shortcut `AI-Daily-Summary.exe` ke folder startup
 4. Restart komputer untuk test
+
+📖 **Panduan lengkap:** Lihat [STARTUP_SETUP.md](STARTUP_SETUP.md)
 
 ## 🔧 Troubleshooting
 

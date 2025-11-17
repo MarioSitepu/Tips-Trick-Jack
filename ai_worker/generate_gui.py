@@ -41,7 +41,8 @@ except ImportError:
 class AIWorker:
     """Class untuk handle AI worker logic"""
     
-    def __init__(self, data_dir=None, use_ai=True, ai_provider="gemini", theme="modern", style="gradient"):
+    def __init__(self, data_dir=None, use_ai=True, ai_provider="gemini", theme="modern", style="gradient", 
+                 auto_push=False, github_token=None):
         self.running = False
         self.thread = None
         self.interval = 1800  # 30 menit default
@@ -52,6 +53,8 @@ class AIWorker:
         self.ai_provider = ai_provider
         self.theme = theme
         self.style = style
+        self.auto_push = auto_push
+        self.github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
         
     def _get_data_dir(self):
         """Get data directory relative to script location"""
@@ -322,6 +325,38 @@ Generated at **{now_str}**.
         if self.status_callback:
             self.status_callback(log_msg)
         
+        # Auto push ke GitHub jika enabled
+        if self.auto_push:
+            try:
+                try:
+                    from .git_helper import git_commit_and_push
+                except ImportError:
+                    from git_helper import git_commit_and_push
+                
+                repo_path = self.data_dir.parent
+                success, message = git_commit_and_push(
+                    repo_path=repo_path,
+                    files_to_add=["data/", "projects/"],
+                    commit_message=f"🤖 AI update: New project {project_folder_name}",
+                    token=self.github_token
+                )
+                
+                if success:
+                    push_msg = f"✅ Pushed to GitHub: {message}"
+                    print(push_msg)
+                    if self.status_callback:
+                        self.status_callback(push_msg)
+                else:
+                    error_msg = f"⚠️ Push failed: {message}"
+                    print(error_msg)
+                    if self.status_callback:
+                        self.status_callback(error_msg)
+            except Exception as e:
+                error_msg = f"⚠️ Auto-push error: {str(e)}"
+                print(error_msg)
+                if self.status_callback:
+                    self.status_callback(error_msg)
+        
         return log_msg
     
     def worker_loop(self):
@@ -368,8 +403,12 @@ Generated at **{now_str}**.
 class SystemTrayApp:
     """System Tray Application"""
     
-    def __init__(self):
-        self.worker = AIWorker()
+    def __init__(self, auto_push=False, github_token=None):
+        # Get auto_push dari environment atau parameter
+        auto_push = auto_push or os.getenv("AUTO_PUSH", "false").lower() == "true"
+        github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
+        
+        self.worker = AIWorker(auto_push=auto_push, github_token=github_token)
         self.worker.status_callback = self.on_status_update
         self.icon = None
         self.status_log = []

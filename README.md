@@ -10,6 +10,7 @@ Proyek ini menghasilkan ringkasan harian secara otomatis dengan AI yang dijalank
 - ✅ **Hanya perubahan yang benar-benar di-commit** - Batch commit setiap 30 menit
 - ✅ **Rate limit aman** - Maksimal 48 commit per hari (sangat aman)
 - ✅ **AI-Powered HTML/CSS Generation** - Generate HTML/CSS unik dengan AI (OpenAI, Ollama, dll)
+- ✅ **Auto Push ke GitHub** - EXE bisa langsung commit & push otomatis (opsional)
 
 ## 🚀 Cara Kerja
 
@@ -18,7 +19,7 @@ Proyek ini menghasilkan ringkasan harian secara otomatis dengan AI yang dijalank
    - Membuat folder baru dengan nama berdasarkan tanggal (format: `YYYY-MM-DD-HH-MM`)
    - Setiap folder berisi `index.html` dan `style.css`
    - Menyimpan tracking ke `data/daily_summary.md`
-   - Tidak langsung commit/push
+   - **Auto commit & push ke GitHub** (jika enabled)
 
 2. **GitHub Actions** (jalan di GitHub):
    - Run setiap 30 menit
@@ -57,6 +58,8 @@ ai-daily-project/
 ```
 
 ## 💻 Versi EXE (Windows Background App)
+
+📖 **Setup Auto-Start:** Lihat [STARTUP_SETUP.md](STARTUP_SETUP.md) untuk menambahkan EXE ke Windows Startup
 
 **NEW!** Sekarang tersedia versi EXE yang berjalan di background dengan system tray!
 
@@ -117,8 +120,11 @@ AI worker akan:
 - Membuat folder baru di `projects/` dengan nama berdasarkan tanggal
 - Setiap folder berisi `index.html` dan `style.css` (proyek lengkap)
 - Menyimpan tracking ke `data/daily_summary.md`
+- **Auto commit & push ke GitHub** (jika enabled)
 - **Console version:** Berjalan terus sampai dihentikan (Ctrl+C)
 - **GUI version:** Berjalan di background dengan system tray icon
+
+📖 **Setup Auto-Push:** Lihat [AUTO_PUSH_SETUP.md](AUTO_PUSH_SETUP.md)
 
 ### 2. Setup GitHub Actions
 
