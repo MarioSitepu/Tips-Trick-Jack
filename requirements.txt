@@ -1,0 +1,21 @@
+# Requirements untuk AI Worker
+# Install dengan: pip install -r requirements.txt
+
+# Dependencies dasar (sudah termasuk di Python standard library)
+# time, datetime, os - tidak perlu install
+
+# Jika ingin menggunakan AI model, uncomment salah satu:
+
+# Untuk OpenAI API
+# openai>=1.0.0
+
+# Untuk Hugging Face
+# transformers>=4.30.0
+# torch>=2.0.0
+
+# Untuk Ollama (AI lokal)
+# ollama>=0.1.0
+
+# Untuk requests (jika pakai API)
+# requests>=2.31.0
+
