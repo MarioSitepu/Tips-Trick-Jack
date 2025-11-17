@@ -42,7 +42,8 @@ class AIWorker:
     """Class untuk handle AI worker logic"""
     
     def __init__(self, data_dir=None, use_ai=True, ai_provider="gemini", theme="modern", style="gradient", 
-                 auto_push=False, github_token=None):
+                 auto_push=False, github_token=None, push_to_showcase=False, showcase_repo_path=None,
+                 showcase_repo_url=None, showcase_branch="main"):
         self.running = False
         self.thread = None
         self.interval = 1800  # 30 menit default
@@ -55,6 +56,10 @@ class AIWorker:
         self.style = style
         self.auto_push = auto_push
         self.github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
+        self.push_to_showcase = push_to_showcase
+        self.showcase_repo_path = showcase_repo_path or os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
+        self.showcase_repo_url = showcase_repo_url or os.getenv("SHOWCASE_REPO_URL")
+        self.showcase_branch = showcase_branch or os.getenv("SHOWCASE_BRANCH", "main")
         
     def _get_data_dir(self):
         """Get data directory relative to script location"""
@@ -357,6 +362,38 @@ Generated at **{now_str}**.
                 if self.status_callback:
                     self.status_callback(error_msg)
         
+        # Push ke Showcase Repo jika enabled
+        if self.push_to_showcase:
+            try:
+                try:
+                    from .showcase_helper import push_to_showcase_repo
+                except ImportError:
+                    from showcase_helper import push_to_showcase_repo
+                
+                success, message = push_to_showcase_repo(
+                    source_project_dir=project_dir,
+                    showcase_repo_path=self.showcase_repo_path,
+                    github_token=self.github_token,
+                    branch=self.showcase_branch,
+                    repo_url=self.showcase_repo_url
+                )
+                
+                if success:
+                    showcase_msg = f"✅ Pushed to Showcase Repo: {message}"
+                    print(showcase_msg)
+                    if self.status_callback:
+                        self.status_callback(showcase_msg)
+                else:
+                    error_msg = f"⚠️ Showcase push failed: {message}"
+                    print(error_msg)
+                    if self.status_callback:
+                        self.status_callback(error_msg)
+            except Exception as e:
+                error_msg = f"⚠️ Showcase push error: {str(e)}"
+                print(error_msg)
+                if self.status_callback:
+                    self.status_callback(error_msg)
+        
         return log_msg
     
     def worker_loop(self):
@@ -407,8 +444,19 @@ class SystemTrayApp:
         # Get auto_push dari environment atau parameter
         auto_push = auto_push or os.getenv("AUTO_PUSH", "false").lower() == "true"
         github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
+        push_to_showcase = os.getenv("PUSH_TO_SHOWCASE", "false").lower() == "true"
+        showcase_repo_path = os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
+        showcase_repo_url = os.getenv("SHOWCASE_REPO_URL")
+        showcase_branch = os.getenv("SHOWCASE_BRANCH", "main")
         
-        self.worker = AIWorker(auto_push=auto_push, github_token=github_token)
+        self.worker = AIWorker(
+            auto_push=auto_push, 
+            github_token=github_token,
+            push_to_showcase=push_to_showcase,
+            showcase_repo_path=showcase_repo_path,
+            showcase_repo_url=showcase_repo_url,
+            showcase_branch=showcase_branch
+        )
         self.worker.status_callback = self.on_status_update
         self.icon = None
         self.status_log = []

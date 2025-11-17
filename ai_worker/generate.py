@@ -24,6 +24,12 @@ STYLE = "gradient"  # "gradient", "solid", "glassmorphism", dll
 AUTO_PUSH = True  # Set True untuk auto push ke GitHub setelah generate
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")  # Token untuk push (opsional)
 
+# Konfigurasi Showcase Repo (Repo terpisah untuk showcase website)
+PUSH_TO_SHOWCASE = False  # Set True untuk push ke repo showcase terpisah
+SHOWCASE_REPO_PATH = os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")  # Path ke repo showcase lokal
+SHOWCASE_REPO_URL = os.getenv("SHOWCASE_REPO_URL")  # URL repo showcase (untuk clone otomatis)
+SHOWCASE_BRANCH = os.getenv("SHOWCASE_BRANCH", "main")  # Branch untuk showcase repo
+
 def generate_html_css_project(project_dir, date_str, use_ai=None, ai_provider=None, theme=None, style=None):
     """
     Generate HTML/CSS project menggunakan AI atau template fallback
@@ -314,6 +320,29 @@ Generated at **{now_str}**.
                 print(f"⚠️ Push failed: {message}")
         except Exception as e:
             print(f"⚠️ Auto-push error: {str(e)}")
+    
+    # Push ke Showcase Repo jika enabled
+    if PUSH_TO_SHOWCASE:
+        try:
+            try:
+                from .showcase_helper import push_to_showcase_repo
+            except ImportError:
+                from showcase_helper import push_to_showcase_repo
+            
+            success, message = push_to_showcase_repo(
+                source_project_dir=project_dir,
+                showcase_repo_path=SHOWCASE_REPO_PATH,
+                github_token=GITHUB_TOKEN,
+                branch=SHOWCASE_BRANCH,
+                repo_url=SHOWCASE_REPO_URL
+            )
+            
+            if success:
+                print(f"✅ Pushed to Showcase Repo: {message}")
+            else:
+                print(f"⚠️ Showcase push failed: {message}")
+        except Exception as e:
+            print(f"⚠️ Showcase push error: {str(e)}")
 
 if __name__ == "__main__":
     print("AI Worker started. Generating summary every 30 minutes...")
