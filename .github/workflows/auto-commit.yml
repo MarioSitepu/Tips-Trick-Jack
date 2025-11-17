@@ -16,7 +16,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Gunakan GITHUB_TOKEN untuk checkout (selalu tersedia)
+          fetch-depth: 0
 
       - name: Check for changes
         id: check_changes
@@ -50,8 +51,10 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Commit changes
+      - name: Commit and Push changes
         if: steps.check_changes.outputs.has_changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "AI-Bot"
           git config user.email "bot@example.com"
@@ -63,11 +66,22 @@ jobs:
           COMMIT_MSG="🤖 AI update: New project created at $(date '+%Y-%m-%d %H:%M:%S')"
           git commit -m "$COMMIT_MSG" || exit 0
           
-          # Push ke branch yang sama
-          git push || echo "Push failed (might be no changes or already pushed)"
+          # Push ke branch yang sama (auto push)
+          # Cek apakah PAT tersedia (opsional), jika tidak pakai GITHUB_TOKEN
+          # Note: Warning tentang GITHUB_TOKEN_PAT bisa diabaikan - workflow tetap berjalan
+          PAT_TOKEN="${{ secrets.GITHUB_TOKEN_PAT }}"
+          if [ -n "$PAT_TOKEN" ] && [ "$PAT_TOKEN" != "" ]; then
+            PUSH_TOKEN="$PAT_TOKEN"
+            echo "Using Fine-grained PAT for push"
+          else
+            PUSH_TOKEN="$GITHUB_TOKEN"
+            echo "Using GITHUB_TOKEN for push (PAT not configured)"
+          fi
+          
+          git remote set-url origin https://x-access-token:$PUSH_TOKEN@github.com/${{ github.repository }}.git
+          git push origin HEAD:${{ github.ref_name }} || echo "Push failed (might be no changes or already pushed)"
 
       - name: Skip commit
         if: steps.check_changes.outputs.has_changes == 'false'
         run: |
           echo "No changes to commit. Skipping..."
-

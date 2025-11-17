@@ -124,7 +124,21 @@ AI worker akan:
 
 GitHub Actions sudah dikonfigurasi di `.github/workflows/auto-commit.yml`.
 
-**Tidak perlu setup tambahan!** Workflow akan:
+**Setup Token:**
+
+**Opsi A: GITHUB_TOKEN (Default - Paling Mudah)** ⭐
+- ✅ Tidak perlu setup manual
+- ✅ Otomatis tersedia
+- ✅ Cukup untuk branch yang tidak protected
+
+**Opsi B: Fine-grained Personal Access Token**
+- Diperlukan jika branch default adalah **protected branch**
+- Buat PAT di: https://github.com/settings/tokens
+- Tambahkan ke Repository Secrets sebagai `GITHUB_TOKEN_PAT`
+
+📖 **Panduan lengkap:** Lihat [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md)
+
+**Setelah setup, workflow akan:**
 - Otomatis run setiap 30 menit
 - Commit jika ada perubahan
 - Skip jika tidak ada perubahan

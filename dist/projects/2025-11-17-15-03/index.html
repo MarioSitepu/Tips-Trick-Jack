@@ -13,74 +13,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Project Showcase</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Future Project Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-bg: #0f172a; /* Dark Blue-Gray */
-            --secondary-bg: #1e293b; /* Slightly Lighter Blue-Gray */
-            --text-color: #e2e8f0; /* Light Gray */
-            --accent-color-start: #6366f1; /* Indigo */
-            --accent-color-end: #a855f7; /* Violet */
-            --button-hover-start: #8b5cf6; /* Purple */
-            --button-hover-end: #ec4899; /* Pink */
-            --border-color: #334155; /* Slate Gray */
-            --shadow-color: rgba(0, 0, 0, 0.2);
+            --primary-bg-start: #1a2a6c; /* Dark Blue */
+            --primary-bg-end: #b21f1f;   /* Dark Red */
+            --secondary-bg: #f0f2f5;     /* Light Gray */
+            --text-color-light: #ffffff;
+            --text-color-dark: #333333;
+            --accent-color-1: #00c6ff;   /* Bright Blue */
+            --accent-color-2: #0072ff;   /* Deeper Blue */
+            --card-bg: rgba(255, 255, 255, 0.08); /* Slightly transparent white for cards */
+            --border-radius: 10px;
+            --spacing-unit: 1rem;
+            --header-height: 80px;
         }
 
-        * {
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--primary-bg);
-            color: var(--text-color);
-            line-height: 1.6;
+        html {
             scroll-behavior: smooth;
         }
 
-        a {
-            color: var(--accent-color-start);
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        a:hover {
-            color: var(--accent-color-end);
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color-light);
+            background: linear-gradient(135deg, var(--primary-bg-start) 0%, var(--primary-bg-end) 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1.5rem;
+            padding: 0 var(--spacing-unit);
         }
 
-        /* Header */
         header {
-            background-color: var(--secondary-bg);
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, rgba(26, 42, 108, 0.9) 0%, rgba(178, 31, 31, 0.9) 100%);
+            color: var(--text-color-light);
+            padding: var(--spacing-unit) 0;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 10px var(--shadow-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
         header .container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            height: var(--header-height);
         }
 
         .logo {
             font-size: 1.8rem;
             font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-color-start), var(--accent-color-end));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-color-light);
+            text-decoration: none;
+            letter-spacing: 1px;
         }
 
         nav ul {
@@ -93,288 +93,286 @@
         }
 
         nav ul li a {
+            color: var(--text-color-light);
+            text-decoration: none;
             font-weight: 600;
-            font-size: 1.05rem;
-            color: var(--text-color);
-            transition: background-image 0.3s ease, -webkit-background-clip 0.3s ease, -webkit-text-fill-color 0.3s ease;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--accent-color-1);
+            transition: width 0.3s ease;
+        }
+
+        nav ul li a:hover::after,
+        nav ul li a.active::after {
+            width: 100%;
         }
 
         nav ul li a:hover {
-            background: linear-gradient(90deg, var(--accent-color-start), var(--accent-color-end));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--accent-color-1);
         }
 
-        /* Hero Section */
+        main {
+            flex-grow: 1;
+            padding: 4rem 0;
+        }
+
+        section {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        section:nth-of-type(even) {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--text-color-light);
+        }
+
+        h2 {
+            font-size: 2.8rem;
+            color: var(--text-color-light);
+            position: relative;
+            display: inline-block;
+            margin-bottom: 3rem;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -1rem;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color-1) 0%, var(--accent-color-2) 100%);
+            border-radius: 2px;
+        }
+
+        p {
+            font-size: 1.15rem;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
         .hero {
-            background: radial-gradient(circle at top left, var(--secondary-bg) 0%, var(--primary-bg) 70%);
-            padding: 6rem 0;
+            padding: 8rem 0;
             text-align: center;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
             align-items: center;
-            min-height: 70vh;
+            justify-content: center;
+        }
+
+        .hero .container {
+            max-width: 900px;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
+            font-size: 4.5rem;
             margin-bottom: 1.5rem;
-            line-height: 1.2;
-            background: linear-gradient(45deg, var(--accent-color-start), var(--accent-color-end), #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
 
         .hero p {
-            font-size: 1.3rem;
-            max-width: 800px;
-            margin-bottom: 2.5rem;
-            color: var(--text-color);
-            opacity: 0.9;
+            font-size: 1.5rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem auto;
         }
 
         .btn {
             display: inline-block;
             padding: 1rem 2.5rem;
-            border-radius: 0.5rem;
-            font-size: 1.1rem;
+            background: linear-gradient(45deg, var(--accent-color-1) 0%, var(--accent-color-2) 100%);
+            color: var(--text-color-light);
+            text-decoration: none;
+            border-radius: 50px;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            background: linear-gradient(45deg, var(--accent-color-start), var(--accent-color-end));
-            color: white;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px var(--shadow-color);
             border: none;
             cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 198, 255, 0.2);
         }
 
         .btn:hover {
-            background: linear-gradient(45deg, var(--button-hover-start), var(--button-hover-end));
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px var(--shadow-color);
-        }
-
-        /* Section Styling */
-        section {
-            padding: 5rem 0;
-            border-top: 1px solid var(--border-color);
-        }
-
-        section:nth-of-type(even) {
-            background-color: var(--secondary-bg);
-        }
-
-        h2 {
-            font-size: 2.8rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 4rem;
-            background: linear-gradient(90deg, var(--accent-color-end), var(--accent-color-start));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            box-shadow: 0 12px 25px rgba(0, 198, 255, 0.3);
+            background: linear-gradient(45deg, var(--accent-color-2) 0%, var(--accent-color-1) 100%);
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
+            margin-top: 3rem;
         }
 
         .feature-card {
-            background-color: var(--secondary-bg);
+            background: var(--card-bg);
             padding: 2.5rem;
-            border-radius: 0.75rem;
-            text-align: center;
-            box-shadow: 0 4px 10px var(--shadow-color);
+            border-radius: var(--border-radius);
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px var(--shadow-color);
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
         .feature-card h3 {
-            font-size: 1.7rem;
+            font-size: 1.6rem;
+            color: var(--accent-color-1);
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, var(--accent-color-start), var(--accent-color-end));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
         .feature-card p {
             font-size: 1rem;
-            color: var(--text-color);
-            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        .feature-card .icon {
+        .cta {
+            background: linear-gradient(135deg, rgba(0, 198, 255, 0.15) 0%, rgba(0, 114, 255, 0.15) 100%);
+            padding: 6rem 0;
+            border-radius: var(--border-radius);
+            margin: 4rem auto;
+            max-width: 1000px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cta h2 {
             font-size: 3rem;
             margin-bottom: 1.5rem;
-            color: var(--accent-color-end);
-            background: linear-gradient(45deg, var(--accent-color-start), var(--accent-color-end));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-color-light);
         }
 
-        .about-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            align-items: center;
+        .cta p {
+            max-width: 700px;
+            margin: 0 auto 2.5rem auto;
         }
 
-        .about-text {
-            flex: 2;
-            min-width: 300px;
-        }
-
-        .about-text p {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
-            color: var(--text-color);
-            opacity: 0.9;
-        }
-
-        .about-image {
-            flex: 1;
-            min-width: 250px;
-            text-align: center;
-        }
-
-        .about-image img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 0.75rem;
-            box-shadow: 0 8px 25px var(--shadow-color);
-            border: 1px solid var(--border-color);
-        }
-
-        /* Call to Action Section */
-        .cta-section {
-            text-align: center;
-            padding: 6rem 0;
-            background: linear-gradient(135deg, var(--accent-color-start), var(--accent-color-end));
-            color: white;
-        }
-
-        .cta-section h2 {
-            color: white;
-            -webkit-text-fill-color: white; /* Override gradient for white text */
-            margin-bottom: 2rem;
-        }
-
-        .cta-section p {
-            font-size: 1.4rem;
-            margin-bottom: 3rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            opacity: 0.9;
-        }
-
-        .cta-section .btn {
-            background: var(--primary-bg);
-            color: var(--text-color);
-            box-shadow: none;
-        }
-
-        .cta-section .btn:hover {
-            background: var(--secondary-bg);
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        /* Footer */
         footer {
-            background-color: var(--secondary-bg);
-            padding: 3rem 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem 0;
             text-align: center;
-            border-top: 1px solid var(--border-color);
-            color: var(--text-color);
-            font-size: 0.95rem;
+            margin-top: auto;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         footer p {
-            margin-bottom: 0.5rem;
-            opacity: 0.8;
+            margin-bottom: 0;
+            font-size: 0.9rem;
         }
 
         /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            nav ul {
-                display: none; /* Simple hide nav for mobile, could implement hamburger menu */
-            }
-
-            .hero {
-                padding: 4rem 0;
-                min-height: 60vh;
-            }
-
+        @media (max-width: 992px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 3.5rem;
             }
-
             .hero p {
-                font-size: 1.1rem;
-                margin-bottom: 2rem;
+                font-size: 1.2rem;
             }
+            h2 {
+                font-size: 2.2rem;
+            }
+            nav ul li {
+                margin-left: 1.5rem;
+            }
+        }
 
-            .btn {
-                padding: 0.8rem 2rem;
+        @media (max-width: 768px) {
+            header .container {
+                flex-direction: column;
+                height: auto;
+                padding: 1rem var(--spacing-unit);
+            }
+            .logo {
+                margin-bottom: 1rem;
+            }
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            nav ul li {
+                margin: 0.5rem 1rem;
+            }
+            .hero {
+                padding: 6rem 0;
+            }
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .hero p {
                 font-size: 1rem;
             }
-
             h2 {
                 font-size: 2rem;
-                margin-bottom: 3rem;
             }
-
             .features-grid {
                 grid-template-columns: 1fr;
             }
-
-            .feature-card {
-                padding: 2rem;
+            .cta {
+                padding: 4rem 1rem;
             }
-
-            .about-content {
-                flex-direction: column;
-            }
-
-            .about-text, .about-image {
-                min-width: unset;
-                width: 100%;
-            }
-
-            .cta-section h2 {
-                font-size: 2rem;
-            }
-
-            .cta-section p {
-                font-size: 1.2rem;
+            .cta h2 {
+                font-size: 2.5rem;
             }
         }
 
         @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2rem;
+            .logo {
+                font-size: 1.5rem;
             }
-
+            nav ul li {
+                margin: 0.3rem 0.8rem;
+            }
+            .hero h1 {
+                font-size: 2.2rem;
+            }
             .hero p {
+                font-size: 0.9rem;
+            }
+            .btn {
+                padding: 0.8rem 2rem;
                 font-size: 1rem;
             }
-
             h2 {
                 font-size: 1.8rem;
+            }
+            p {
+                font-size: 1rem;
+            }
+            .feature-card {
+                padding: 1.5rem;
+            }
+            .feature-card h3 {
+                font-size: 1.4rem;
+            }
+            .cta h2 {
+                font-size: 2rem;
             }
         }
     </style>
@@ -382,22 +380,12 @@
 <body>
     <header>
         <div class="container">
-            <div class="logo">Project Nova</div>
+            <a href="#" class="logo">FutureForge</a>
             <nav>
                 <ul>
-                    <li><a href="#home">Home</a></li>
+                    <li><a href="#home" class="active">Home</a></li>
                     <li><a href="#features">Features</a></li>
                     <li><a href="#about">About</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <main>
-        <section id="home" class="hero">
-            <div class="container">
-                <h1>Unlock the Future with Project Nova</h1>
-                <p>Experience innovation designed for tomorrow. Seamlessly integrate powerful solutions into
+                    <li><a href="#contact">Contact</a>
 </body>
 </html>
