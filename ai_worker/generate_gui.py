@@ -315,10 +315,23 @@ footer p {
             showcase_path = Path(self.showcase_repo_path)
             if not showcase_path.is_absolute():
                 if getattr(sys, 'frozen', False):
-                    base_dir = Path(sys.executable).parent
+                    # Running as EXE: sys.executable.parent = AiCommitBot/dist
+                    # Need to go up 2 levels: dist -> AiCommitBot -> JacksPlayCards
+                    exe_dir = Path(sys.executable).parent
+                    # If in dist folder, go up to AiCommitBot, then to parent
+                    if exe_dir.name == "dist":
+                        base_dir = exe_dir.parent  # AiCommitBot
+                    else:
+                        base_dir = exe_dir
+                    # Go up one more level to get to JacksPlayCards
+                    base_dir = base_dir.parent
                 else:
+                    # Running as script: __file__ = AiCommitBot/ai_worker/generate_gui.py
+                    # __file__.parent.parent = AiCommitBot
                     base_dir = Path(__file__).parent.parent
-                showcase_path = base_dir.parent / self.showcase_repo_path.replace("../", "")
+                    # Go up one more level to get to JacksPlayCards
+                    base_dir = base_dir.parent
+                showcase_path = base_dir / self.showcase_repo_path.replace("../", "")
         
         # Langsung save ke Project-Showcase jika push_to_showcase enabled
         if self.push_to_showcase and showcase_path:
