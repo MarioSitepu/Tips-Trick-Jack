@@ -27,7 +27,25 @@ echo ========================================
 echo Build process completed!
 echo ========================================
 echo.
-echo Your EXE file is in the 'dist' folder.
+
+REM Cek apakah EXE berhasil dibuat
+if exist "dist\Gemini-Project-Generator.exe" (
+    echo [SUCCESS] EXE created successfully!
+    echo.
+    echo EXE Location: dist\Gemini-Project-Generator.exe
+    echo.
+    echo Next steps:
+    echo   1. Run: run_exe_with_api.bat (to test with API key)
+    echo   2. Or: setup_startup.bat (to add to Windows startup)
+    echo   3. Or: Double-click dist\Gemini-Project-Generator.exe
+) else if exist "dist\AI-Daily-Summary.exe" (
+    echo [WARNING] Old EXE name found: AI-Daily-Summary.exe
+    echo   Please rebuild to get new name: Gemini-Project-Generator.exe
+) else (
+    echo [WARNING] EXE not found in dist folder.
+    echo   Please check build errors above.
+)
+
 echo.
 pause
 
