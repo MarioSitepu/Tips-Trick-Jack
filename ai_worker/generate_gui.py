@@ -39,6 +39,22 @@ except ImportError:
     print("Warning: tkinter not available")
 
 
+def safe_print(*args, **kwargs):
+    """Print dengan handling emoji untuk Windows console"""
+    try:
+        print(*args, **kwargs)
+    except UnicodeEncodeError:
+        # Remove emoji jika tidak bisa di-print
+        safe_args = []
+        for arg in args:
+            if isinstance(arg, str):
+                safe_arg = arg.encode('ascii', 'ignore').decode('ascii')
+                safe_args.append(safe_arg)
+            else:
+                safe_args.append(arg)
+        print(*safe_args, **kwargs)
+
+
 class AIWorker:
     """Class untuk handle AI worker logic"""
     
@@ -60,7 +76,7 @@ class AIWorker:
         self.push_to_showcase = push_to_showcase
         # Folder showcase ada di parent directory: ../ai-showcase/ (sama level dengan AiCommitBot)
         # Repo showcase: https://github.com/MarioSitepu/Jack-s-Cards
-        self.showcase_repo_path = showcase_repo_path or os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
+        self.showcase_repo_path = showcase_repo_path or os.getenv("SHOWCASE_REPO_PATH", "../Project-Showcase")
         self.showcase_repo_url = showcase_repo_url or os.getenv("SHOWCASE_REPO_URL", "https://github.com/MarioSitepu/Jack-s-Cards.git")
         self.showcase_branch = showcase_branch or os.getenv("SHOWCASE_BRANCH", "main")
         
@@ -291,14 +307,50 @@ footer p {
         # Buat folder project berdasarkan tanggal
         # Format: YYYY-MM-DD atau YYYY-MM-DD-HH-MM (jika ingin lebih spesifik)
         project_folder_name = f"{date_str}-{time_str}"  # Format: 2025-01-17-14-30
-        projects_dir = self.data_dir.parent / "projects"
-        project_dir = projects_dir / project_folder_name
+        
+        # Hitung showcase_path terlebih dahulu (akan digunakan nanti untuk push)
+        showcase_path = None
+        if self.push_to_showcase:
+            # Path ke showcase repo
+            showcase_path = Path(self.showcase_repo_path)
+            if not showcase_path.is_absolute():
+                if getattr(sys, 'frozen', False):
+                    base_dir = Path(sys.executable).parent
+                else:
+                    base_dir = Path(__file__).parent.parent
+                showcase_path = base_dir.parent / self.showcase_repo_path.replace("../", "")
+        
+        # Langsung save ke Project-Showcase jika push_to_showcase enabled
+        if self.push_to_showcase and showcase_path:
+            projects_dir = showcase_path / "projects"
+            project_dir = projects_dir / project_folder_name
+            
+            # Juga copy ke public/projects untuk Vercel deployment
+            public_projects_dir = showcase_path / "public" / "projects"
+            public_project_dir = public_projects_dir / project_folder_name
+        else:
+            # Fallback ke projects di AiCommitBot jika showcase tidak enabled
+            projects_dir = self.data_dir.parent / "projects"
+            project_dir = projects_dir / project_folder_name
+            public_project_dir = None
         
         # Buat folder project
         os.makedirs(project_dir, exist_ok=True)
+        if public_project_dir:
+            os.makedirs(public_project_dir, exist_ok=True)
         
         # Generate HTML/CSS project
         html_path, css_path = self.generate_html_css_project(project_dir, date_str)
+        
+        # Copy ke public/projects jika showcase enabled
+        if public_project_dir:
+            import shutil
+            public_html_path = public_project_dir / "index.html"
+            public_css_path = public_project_dir / "style.css"
+            shutil.copy2(html_path, public_html_path)
+            shutil.copy2(css_path, public_css_path)
+            if self.status_callback:
+                self.status_callback(f"📁 Also saved to public/projects: {public_project_dir}")
         
         # Generate summary markdown (opsional, untuk tracking)
         summary = f"""# Daily Summary - {date_str}
@@ -333,6 +385,17 @@ Generated at **{now_str}**.
         if self.status_callback:
             self.status_callback(log_msg)
         
+        # Verifikasi file benar-benar dibuat
+        if not html_path.exists() or not css_path.exists():
+            error_msg = f"❌ ERROR: Files not created! HTML exists: {html_path.exists()}, CSS exists: {css_path.exists()}"
+            safe_print(error_msg)
+            if self.status_callback:
+                self.status_callback(error_msg)
+            return log_msg
+        
+        if self.status_callback:
+            self.status_callback(f"✅ Files verified: Both HTML and CSS exist")
+        
         # Auto push ke GitHub jika enabled
         if self.auto_push:
             try:
@@ -351,49 +414,191 @@ Generated at **{now_str}**.
                 
                 if success:
                     push_msg = f"✅ Pushed to GitHub: {message}"
-                    print(push_msg)
+                    safe_print(push_msg)
                     if self.status_callback:
                         self.status_callback(push_msg)
                 else:
                     error_msg = f"⚠️ Push failed: {message}"
-                    print(error_msg)
+                    safe_print(error_msg)
                     if self.status_callback:
                         self.status_callback(error_msg)
             except Exception as e:
                 error_msg = f"⚠️ Auto-push error: {str(e)}"
-                print(error_msg)
+                safe_print(error_msg)
                 if self.status_callback:
                     self.status_callback(error_msg)
         
         # Push ke Showcase Repo jika enabled
-        if self.push_to_showcase:
+        if self.push_to_showcase and showcase_path:
             try:
-                try:
-                    from .showcase_helper import push_to_showcase_repo
-                except ImportError:
-                    from showcase_helper import push_to_showcase_repo
-                
-                success, message = push_to_showcase_repo(
-                    source_project_dir=project_dir,
-                    showcase_repo_path=self.showcase_repo_path,
-                    github_token=self.github_token,
-                    branch=self.showcase_branch,
-                    repo_url=self.showcase_repo_url
-                )
-                
-                if success:
-                    showcase_msg = f"✅ Pushed to Showcase Repo: {message}"
-                    print(showcase_msg)
-                    if self.status_callback:
-                        self.status_callback(showcase_msg)
-                else:
-                    error_msg = f"⚠️ Showcase push failed: {message}"
-                    print(error_msg)
+                # Path ke showcase repo (sudah dihitung di atas)
+                if not showcase_path.exists():
+                    error_msg = f"⚠️ Showcase path does not exist: {showcase_path}"
+                    safe_print(error_msg)
                     if self.status_callback:
                         self.status_callback(error_msg)
+                    return log_msg
+                
+                # Cek apakah ini git repo
+                git_dir = showcase_path / ".git"
+                if not git_dir.exists():
+                    error_msg = f"⚠️ Showcase path is not a git repository: {showcase_path}"
+                    safe_print(error_msg)
+                    if self.status_callback:
+                        self.status_callback(error_msg)
+                    return log_msg
+                
+                safe_print(f"📁 Showcase repo path: {showcase_path}")
+                if self.status_callback:
+                    self.status_callback(f"🚀 Starting git commit & push process...")
+                
+                # Git commit & push langsung
+                import subprocess
+                
+                # Configure git user
+                subprocess.run(
+                    ["git", "config", "user.name", "AI-Bot"],
+                    cwd=showcase_path,
+                    capture_output=True,
+                    timeout=5
+                )
+                subprocess.run(
+                    ["git", "config", "user.email", "ai-bot@example.com"],
+                    cwd=showcase_path,
+                    capture_output=True,
+                    timeout=5
+                )
+                
+                # Generate gallery index jika ada fungsi untuk itu
+                try:
+                    try:
+                        from .showcase_helper import generate_gallery_index
+                    except ImportError:
+                        try:
+                            from showcase_helper import generate_gallery_index
+                            generate_gallery_index(showcase_path)
+                            index_path = showcase_path / "index.html"
+                            if index_path.exists():
+                                if self.status_callback:
+                                    self.status_callback(f"✅ Gallery index created")
+                        except ImportError:
+                            pass  # showcase_helper tidak tersedia, skip
+                except Exception as e:
+                    if self.status_callback:
+                        self.status_callback(f"⚠️ Error generating gallery index: {str(e)}")
+                
+                # Add files (hanya file yang ada)
+                safe_print(f"📝 Adding files to git...")
+                if self.status_callback:
+                    self.status_callback(f"📝 Adding files to git...")
+                
+                # Cek apakah index.html ada
+                index_html_path = showcase_path / "index.html"
+                files_to_add = ["projects/", "public/projects/"]
+                if index_html_path.exists():
+                    files_to_add.append("index.html")
+                    print(f"   Adding: projects/, public/projects/, and index.html")
+                else:
+                    print(f"   Adding: projects/ and public/projects/")
+                
+                add_result = subprocess.run(
+                    ["git", "add"] + files_to_add,
+                    cwd=showcase_path,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                if add_result.returncode != 0:
+                    safe_print(f"⚠️ Git add warning: {add_result.stderr}")
+                    # Retry dengan hanya projects/ jika index.html error
+                    if "index.html" in add_result.stderr:
+                        print(f"   Retrying with only projects/...")
+                        add_result = subprocess.run(
+                            ["git", "add", "projects/"],
+                            cwd=showcase_path,
+                            capture_output=True,
+                            text=True,
+                            timeout=10
+                        )
+                
+                # Commit
+                commit_msg = f"🎨 Add project: {project_folder_name}"
+                commit_result = subprocess.run(
+                    ["git", "commit", "-m", commit_msg],
+                    cwd=showcase_path,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if commit_result.returncode == 0:
+                    safe_print(f"✅ Committed: {commit_msg}")
+                    if self.status_callback:
+                        self.status_callback(f"✅ Committed: {commit_msg}")
+                    
+                    # Push dengan token
+                    if self.github_token:
+                        if self.status_callback:
+                            self.status_callback(f"🔑 Using GitHub token for push")
+                        # Update remote URL dengan token
+                        remote_result = subprocess.run(
+                            ["git", "remote", "get-url", "origin"],
+                            cwd=showcase_path,
+                            capture_output=True,
+                            text=True,
+                            timeout=5
+                        )
+                        
+                        if remote_result.returncode == 0:
+                            remote_url = remote_result.stdout.strip()
+                            if "github.com" in remote_url and "x-access-token" not in remote_url:
+                                if remote_url.startswith("https://") and "@" not in remote_url:
+                                    repo_part = remote_url.replace("https://github.com/", "").replace(".git", "")
+                                    new_url = f"https://x-access-token:{self.github_token}@github.com/{repo_part}.git"
+                                    subprocess.run(
+                                        ["git", "remote", "set-url", "origin", new_url],
+                                        cwd=showcase_path,
+                                        capture_output=True,
+                                        timeout=5
+                                    )
+                    
+                    # Push
+                    if self.status_callback:
+                        self.status_callback(f"🚀 Pushing to origin/{self.showcase_branch}...")
+                    push_result = subprocess.run(
+                        ["git", "push", "origin", self.showcase_branch],
+                        cwd=showcase_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=30
+                    )
+                    
+                    if push_result.returncode == 0:
+                        showcase_msg = f"✅ Successfully pushed to Showcase Repo: {project_folder_name}"
+                        safe_print(showcase_msg)
+                        if self.status_callback:
+                            self.status_callback(showcase_msg)
+                    else:
+                        error_msg = f"❌ Push failed: {push_result.stderr}"
+                        safe_print(error_msg)
+                        if self.status_callback:
+                            self.status_callback(error_msg)
+                else:
+                    if "nothing to commit" in commit_result.stdout.lower() or "nothing to commit" in commit_result.stderr.lower():
+                        info_msg = f"ℹ️ No changes to commit"
+                        safe_print(info_msg)
+                        if self.status_callback:
+                            self.status_callback(info_msg)
+                    else:
+                        error_msg = f"❌ Commit failed: {commit_result.stderr}"
+                        safe_print(error_msg)
+                        if self.status_callback:
+                            self.status_callback(error_msg)
             except Exception as e:
-                error_msg = f"⚠️ Showcase push error: {str(e)}"
-                print(error_msg)
+                error_msg = f"❌ Showcase push error: {str(e)}"
+                safe_print(error_msg)
+                import traceback
+                traceback.print_exc()
                 if self.status_callback:
                     self.status_callback(error_msg)
         
@@ -403,20 +608,38 @@ Generated at **{now_str}**.
         """Main worker loop"""
         while self.running:
             try:
+                if self.status_callback:
+                    self.status_callback(f"🔄 Starting generation cycle...")
                 self.generate_summary()
                 
-                # Sleep dengan check running status setiap 60 detik
+                if self.status_callback:
+                    self.status_callback(f"⏳ Waiting {self.interval} seconds until next generation...")
+                
+                # Sleep dengan check running status setiap detik
                 for _ in range(self.interval):
                     if not self.running:
                         break
-                    time.sleep(1)
+                    # Sleep dengan check running setiap 0.1 detik untuk responsif
+                    for _ in range(10):  # 10 x 0.1 = 1 detik total
+                        if not self.running:
+                            break
+                        time.sleep(0.1)
                     
             except Exception as e:
-                error_msg = f"Error: {e}"
-                print(error_msg)
+                error_msg = f"❌ Error in worker loop: {e}"
+                safe_print(error_msg)
+                import traceback
+                traceback.print_exc()
                 if self.status_callback:
                     self.status_callback(error_msg)
-                time.sleep(60)  # Tunggu 1 menit jika error
+                # Sleep dengan check running setiap 0.1 detik untuk responsif
+                # Tunggu 60 detik sebelum retry jika error
+                if self.status_callback:
+                    self.status_callback(f"⏳ Waiting 60 seconds before retry...")
+                for _ in range(600):  # 600 x 0.1 = 60 detik total
+                    if not self.running:
+                        break
+                    time.sleep(0.1)
     
     def start(self):
         """Start worker"""
@@ -424,15 +647,18 @@ Generated at **{now_str}**.
             return False
         
         self.running = True
+        # Daemon thread akan otomatis mati saat main thread exit
         self.thread = threading.Thread(target=self.worker_loop, daemon=True)
         self.thread.start()
         return True
     
     def stop(self):
-        """Stop worker"""
+        """Stop worker - fast stop"""
         self.running = False
-        if self.thread:
-            self.thread.join(timeout=5)
+        if self.thread and self.thread.is_alive():
+            # Tunggu thread selesai dengan timeout pendek (1 detik)
+            self.thread.join(timeout=1.0)
+            # Jika masih hidup setelah timeout, biarkan daemon thread mati sendiri
         return True
     
     def is_running(self):
@@ -448,7 +674,7 @@ class SystemTrayApp:
         auto_push = auto_push or os.getenv("AUTO_PUSH", "false").lower() == "true"
         github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT") or os.getenv("GITHUBTOKENPAT")
         push_to_showcase = os.getenv("PUSH_TO_SHOWCASE", "false").lower() == "true"
-        showcase_repo_path = os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
+        showcase_repo_path = os.getenv("SHOWCASE_REPO_PATH", "../Project-Showcase")
         showcase_repo_url = os.getenv("SHOWCASE_REPO_URL", "https://github.com/MarioSitepu/Jack-s-Cards.git")
         showcase_branch = os.getenv("SHOWCASE_BRANCH", "main")
         
@@ -460,6 +686,9 @@ class SystemTrayApp:
             showcase_repo_url=showcase_repo_url,
             showcase_branch=showcase_branch
         )
+        # Set push_to_showcase default ke True jika tidak di-set via env
+        if not push_to_showcase and os.getenv("PUSH_TO_SHOWCASE") is None:
+            self.worker.push_to_showcase = True  # Default enable showcase
         self.worker.status_callback = self.on_status_update
         self.icon = None
         self.status_log = []
@@ -507,7 +736,9 @@ class SystemTrayApp:
     
     def on_status_update(self, message):
         """Callback untuk status update"""
-        self.status_log.append(f"{datetime.now().strftime('%H:%M:%S')} - {message}")
+        # Remove emoji untuk logging (Windows console compatibility)
+        safe_message = message.encode('ascii', 'ignore').decode('ascii') if message else message
+        self.status_log.append(f"{datetime.now().strftime('%H:%M:%S')} - {safe_message}")
         # Keep only last 50 messages
         if len(self.status_log) > 50:
             self.status_log.pop(0)
@@ -613,11 +844,33 @@ class SystemTrayApp:
         return pystray.Menu(*menu_items)
     
     def quit_app(self, icon=None, item=None):
-        """Quit application"""
+        """Quit application - fast exit"""
+        import os
+        import sys
+        
+        # Stop worker dengan timeout pendek
         if self.worker.is_running():
-            self.worker.stop()
+            try:
+                # Set flag untuk stop segera
+                self.worker.stop()
+                # Beri waktu singkat untuk cleanup (max 1 detik)
+                import time
+                time.sleep(0.5)  # Tunggu 0.5 detik untuk cleanup
+            except:
+                pass  # Ignore errors saat exit
+        
+        # Stop icon segera
         if self.icon:
-            self.icon.stop()
+            try:
+                self.icon.stop()
+            except:
+                pass
+        
+        # Force exit untuk memastikan aplikasi benar-benar keluar
+        try:
+            os._exit(0)  # Force exit tanpa cleanup lebih lanjut
+        except:
+            sys.exit(0)  # Fallback ke normal exit
     
     def run(self):
         """Run system tray app"""

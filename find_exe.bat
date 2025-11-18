@@ -8,33 +8,37 @@ echo ============================================================
 echo.
 
 set "FOUND=0"
+set "SCRIPT_DIR=%~dp0"
+
+REM Normalize path (remove trailing backslash)
+if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 
 REM Cek nama baru di dist folder
-if exist "%~dp0dist\Gemini-Project-Generator.exe" (
+if exist "%SCRIPT_DIR%\dist\Gemini-Project-Generator.exe" (
     echo [OK] Found: dist\Gemini-Project-Generator.exe
-    echo    Full path: %~dp0dist\Gemini-Project-Generator.exe
+    echo    Full path: %SCRIPT_DIR%\dist\Gemini-Project-Generator.exe
     set "FOUND=1"
 )
 
 REM Cek nama baru di root
-if exist "%~dp0Gemini-Project-Generator.exe" (
+if exist "%SCRIPT_DIR%\Gemini-Project-Generator.exe" (
     echo [OK] Found: Gemini-Project-Generator.exe
-    echo    Full path: %~dp0Gemini-Project-Generator.exe
+    echo    Full path: %SCRIPT_DIR%\Gemini-Project-Generator.exe
     set "FOUND=1"
 )
 
 REM Cek nama lama di dist folder (legacy)
-if exist "%~dp0dist\AI-Daily-Summary.exe" (
+if exist "%SCRIPT_DIR%\dist\AI-Daily-Summary.exe" (
     echo [LEGACY] Found: dist\AI-Daily-Summary.exe (old name)
-    echo    Full path: %~dp0dist\AI-Daily-Summary.exe
+    echo    Full path: %SCRIPT_DIR%\dist\AI-Daily-Summary.exe
     echo    Note: Please rebuild to get new name
     set "FOUND=1"
 )
 
 REM Cek nama lama di root (legacy)
-if exist "%~dp0AI-Daily-Summary.exe" (
+if exist "%SCRIPT_DIR%\AI-Daily-Summary.exe" (
     echo [LEGACY] Found: AI-Daily-Summary.exe (old name)
-    echo    Full path: %~dp0AI-Daily-Summary.exe
+    echo    Full path: %SCRIPT_DIR%\AI-Daily-Summary.exe
     echo    Note: Please rebuild to get new name
     set "FOUND=1"
 )
@@ -43,10 +47,13 @@ if "%FOUND%"=="0" (
     echo [ERROR] No EXE found!
     echo.
     echo Searched locations:
-    echo   - %~dp0dist\Gemini-Project-Generator.exe
-    echo   - %~dp0Gemini-Project-Generator.exe
-    echo   - %~dp0dist\AI-Daily-Summary.exe (legacy)
-    echo   - %~dp0AI-Daily-Summary.exe (legacy)
+    echo   - %SCRIPT_DIR%\dist\Gemini-Project-Generator.exe
+    echo   - %SCRIPT_DIR%\Gemini-Project-Generator.exe
+    echo   - %SCRIPT_DIR%\dist\AI-Daily-Summary.exe (legacy)
+    echo   - %SCRIPT_DIR%\AI-Daily-Summary.exe (legacy)
+    echo.
+    echo Current directory: %CD%
+    echo Script directory: %SCRIPT_DIR%
     echo.
     echo Please build EXE first with: build.bat
 ) else (

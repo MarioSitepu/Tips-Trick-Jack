@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 import os
+import shutil
 from pathlib import Path
 
 # Import AI HTML generator
@@ -279,6 +280,18 @@ def generate_summary():
     # Generate HTML/CSS project langsung di showcase
     html_path, css_path = generate_html_css_project(project_dir, date_str)
     
+    # Juga copy ke public/projects untuk Vercel deployment
+    public_projects_dir = showcase_path / "public" / "projects"
+    public_project_dir = public_projects_dir / project_folder_name
+    os.makedirs(public_project_dir, exist_ok=True)
+    
+    # Copy HTML dan CSS ke public/projects
+    public_html_path = public_project_dir / "index.html"
+    public_css_path = public_project_dir / "style.css"
+    shutil.copy2(html_path, public_html_path)
+    shutil.copy2(css_path, public_css_path)
+    print(f"📁 Also saved to public/projects: {public_project_dir}")
+    
     # Generate summary markdown (opsional, untuk tracking) - tetap simpan di AiCommitBot/data
     summary = f"""# Daily Summary - {date_str}
 
@@ -307,9 +320,20 @@ Generated at **{now_str}**.
         f.write(summary)
     
     print(f"[{now_str}] Project created in Showcase: {project_folder_name} ({html_path.name}, {css_path.name})")
+    print(f"📁 Project location: {project_dir}")
+    print(f"📄 HTML: {html_path}")
+    print(f"📄 CSS: {css_path}")
+    
+    # Verifikasi file benar-benar dibuat
+    if not html_path.exists() or not css_path.exists():
+        print(f"❌ ERROR: Files not created! HTML exists: {html_path.exists()}, CSS exists: {css_path.exists()}")
+        return
+    
+    print(f"✅ Files verified: Both HTML and CSS exist")
     
     # Push ke Showcase Repo (wajib karena langsung save di sana)
     if PUSH_TO_SHOWCASE:
+        print(f"🚀 Starting git commit & push process...")
         try:
             try:
                 from .showcase_helper import push_to_showcase_repo, generate_gallery_index
@@ -317,11 +341,31 @@ Generated at **{now_str}**.
                 from showcase_helper import push_to_showcase_repo, generate_gallery_index
             
             # Generate gallery index
-            generate_gallery_index(showcase_path)
+            print(f"📝 Generating gallery index...")
+            try:
+                generate_gallery_index(showcase_path)
+                index_path = showcase_path / "index.html"
+                if index_path.exists():
+                    print(f"✅ Gallery index created: {index_path}")
+                else:
+                    print(f"⚠️ Warning: Gallery index not created (file not found)")
+            except Exception as e:
+                print(f"⚠️ Error generating gallery index: {str(e)}")
+                import traceback
+                traceback.print_exc()
             
             # Git commit & push
             try:
                 import subprocess
+                
+                # Cek apakah showcase_path adalah git repo
+                git_dir = showcase_path / ".git"
+                if not git_dir.exists():
+                    print(f"⚠️ Showcase path is not a git repository: {showcase_path}")
+                    print(f"   Please initialize git repo or clone from: {SHOWCASE_REPO_URL}")
+                    return
+                
+                print(f"📁 Showcase repo path: {showcase_path}")
                 
                 # Configure git user
                 subprocess.run(
@@ -337,16 +381,101 @@ Generated at **{now_str}**.
                     timeout=5
                 )
                 
-                # Add files
-                subprocess.run(
-                    ["git", "add", "projects/"],
+                # Verifikasi file benar-benar ada sebelum commit
+                print(f"🔍 Verifying files before commit...")
+                print(f"   Project dir exists: {project_dir.exists()}")
+                print(f"   HTML file exists: {html_path.exists()}")
+                print(f"   CSS file exists: {css_path.exists()}")
+                
+                if not project_dir.exists():
+                    print(f"❌ ERROR: Project directory does not exist: {project_dir}")
+                    return
+                
+                if not html_path.exists() or not css_path.exists():
+                    print(f"❌ ERROR: Project files missing!")
+                    print(f"   HTML: {html_path.exists()}")
+                    print(f"   CSS: {css_path.exists()}")
+                    return
+                
+                # Cek status git sebelum add
+                status_result = subprocess.run(
+                    ["git", "status", "--short"],
                     cwd=showcase_path,
                     capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                status_before = status_result.stdout.strip() if status_result.stdout else 'No changes'
+                print(f"📊 Git status (before add): {status_before}")
+                
+                # Add files (hanya file yang ada)
+                print(f"📝 Adding files to git...")
+                
+                # Cek apakah index.html ada
+                index_html_path = showcase_path / "index.html"
+                files_to_add = ["projects/", "public/projects/"]
+                if index_html_path.exists():
+                    files_to_add.append("index.html")
+                    print(f"   Adding: projects/, public/projects/, and index.html")
+                else:
+                    print(f"   Adding: projects/ and public/projects/")
+                
+                add_result = subprocess.run(
+                    ["git", "add"] + files_to_add,
+                    cwd=showcase_path,
+                    capture_output=True,
+                    text=True,
                     timeout=10
                 )
+                if add_result.returncode != 0:
+                    print(f"❌ Git add failed: {add_result.stderr}")
+                    # Jangan return, coba lanjutkan dengan hanya projects/
+                    if "index.html" in add_result.stderr:
+                        print(f"   Retrying with only projects/...")
+                        add_result = subprocess.run(
+                            ["git", "add", "projects/"],
+                            cwd=showcase_path,
+                            capture_output=True,
+                            text=True,
+                            timeout=10
+                        )
+                        if add_result.returncode != 0:
+                            print(f"❌ Git add projects/ also failed: {add_result.stderr}")
+                            return
+                
+                # Cek status setelah add
+                status_after = subprocess.run(
+                    ["git", "status", "--short"],
+                    cwd=showcase_path,
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                staged_files = status_after.stdout.strip() if status_after.stdout else 'No changes'
+                print(f"📊 Git status (after add): {staged_files}")
+                
+                if "No changes" in staged_files or not staged_files:
+                    print(f"⚠️ WARNING: No files staged for commit!")
+                    print(f"   This might mean files are already committed or git add failed silently")
+                    # Cek apakah project folder benar-benar ada di git
+                    check_result = subprocess.run(
+                        ["git", "ls-files", "projects/"],
+                        cwd=showcase_path,
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    if check_result.returncode == 0 and project_folder_name in check_result.stdout:
+                        print(f"   ℹ️ Project folder already tracked in git")
+                        print(f"   Files may already be committed. Skipping commit.")
+                        return
+                    else:
+                        print(f"   ⚠️ Project folder not found in git. This is unexpected.")
+                        print(f"   Project path: projects/{project_folder_name}/")
                 
                 # Commit
                 commit_msg = f"🎨 Add project: {project_folder_name}"
+                print(f"💾 Committing with message: {commit_msg}")
                 result = subprocess.run(
                     ["git", "commit", "-m", commit_msg],
                     cwd=showcase_path,
@@ -355,11 +484,20 @@ Generated at **{now_str}**.
                     timeout=10
                 )
                 
+                print(f"📤 Commit result - Return code: {result.returncode}")
+                if result.stdout:
+                    print(f"   stdout: {result.stdout.strip()}")
+                if result.stderr:
+                    print(f"   stderr: {result.stderr.strip()}")
+                
                 if result.returncode == 0:
+                    print(f"✅ Committed successfully: {commit_msg}")
+                    
                     # Push
                     if GITHUB_TOKEN:
+                        print(f"🔑 Using GitHub token for push")
                         # Update remote URL dengan token
-                        result = subprocess.run(
+                        remote_result = subprocess.run(
                             ["git", "remote", "get-url", "origin"],
                             cwd=showcase_path,
                             capture_output=True,
@@ -367,8 +505,10 @@ Generated at **{now_str}**.
                             timeout=5
                         )
                         
-                        if result.returncode == 0:
-                            remote_url = result.stdout.strip()
+                        if remote_result.returncode == 0:
+                            remote_url = remote_result.stdout.strip()
+                            print(f"🌐 Current remote: {remote_url}")
+                            
                             if "github.com" in remote_url and "x-access-token" not in remote_url:
                                 if remote_url.startswith("https://"):
                                     if "@" not in remote_url:
@@ -380,7 +520,13 @@ Generated at **{now_str}**.
                                             capture_output=True,
                                             timeout=5
                                         )
+                                        print(f"🔐 Updated remote URL with token")
+                    else:
+                        print(f"⚠️ No GitHub token found. Push may fail if repo requires authentication.")
+                        print(f"   Set GITHUB_TOKEN, GITHUB_TOKEN_PAT, or GITHUBTOKENPAT environment variable")
                     
+                    # Push
+                    print(f"🚀 Pushing to origin/{SHOWCASE_BRANCH}...")
                     result = subprocess.run(
                         ["git", "push", "origin", SHOWCASE_BRANCH],
                         cwd=showcase_path,
@@ -390,17 +536,23 @@ Generated at **{now_str}**.
                     )
                     
                     if result.returncode == 0:
-                        print(f"✅ Pushed to Showcase Repo: {project_folder_name}")
+                        print(f"✅ Successfully pushed to Showcase Repo: {project_folder_name}")
                     else:
-                        print(f"⚠️ Push failed: {result.stderr}")
+                        print(f"❌ Push failed!")
+                        print(f"   Error: {result.stderr}")
+                        print(f"   Output: {result.stdout}")
                 else:
-                    if "nothing to commit" not in result.stdout.lower():
-                        print(f"⚠️ Commit failed: {result.stderr}")
+                    if "nothing to commit" in result.stdout.lower() or "nothing to commit" in result.stderr.lower():
+                        print(f"ℹ️ No changes to commit (files may already be committed)")
                     else:
-                        print(f"ℹ️ No changes to commit")
+                        print(f"❌ Commit failed!")
+                        print(f"   Error: {result.stderr}")
+                        print(f"   Output: {result.stdout}")
                         
             except Exception as e:
-                print(f"⚠️ Git operation error: {str(e)}")
+                print(f"❌ Git operation error: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 
         except Exception as e:
             print(f"⚠️ Showcase push error: {str(e)}")

@@ -100,16 +100,16 @@ def main():
     
     # Build
     if build_exe():
-        print("\n✅ Build completed successfully!")
+        print("\n[SUCCESS] Build completed successfully!")
         print("\nNext steps:")
         print("1. Find Gemini-Project-Generator.exe in the 'dist' folder")
         print("2. Copy it to your desired location")
         print("3. Make sure 'data' folder exists in the same directory")
         print("4. Set GEMINI_API_KEY environment variable (jika pakai AI)")
         print("5. Run the .exe file")
-        print("\n📖 Untuk setup API key, lihat GEMINI_SETUP.md")
+        print("\n[INFO] Untuk setup API key, lihat GEMINI_SETUP.md")
     else:
-        print("\n❌ Build failed. Please check the errors above.")
+        print("\n[ERROR] Build failed. Please check the errors above.")
 
 if __name__ == "__main__":
     main()

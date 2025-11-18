@@ -330,7 +330,7 @@ Format: Return HTML with <style> tag inside <head> section."""
             prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.7,
-                max_output_tokens=4000,  # Increased for HTML/CSS
+                max_output_tokens=8192,  # Increased for HTML/CSS (Gemini 2.5 Flash supports up to 8192)
             ),
             safety_settings=safety_settings
         )
@@ -350,14 +350,41 @@ Format: Return HTML with <style> tag inside <head> section."""
             raise Exception("Content blocked due to recitation")
         
         # Try to get text even if finish_reason is not STOP
+        full_response = None
         try:
             full_response = response.text
-        except:
+        except Exception as e:
             # Fallback: try to get content from parts
             if candidate.content and candidate.content.parts:
-                full_response = "".join([part.text for part in candidate.content.parts if hasattr(part, 'text')])
-            else:
-                raise Exception(f"Could not extract text. Finish reason: {finish_reason}")
+                try:
+                    full_response = "".join([part.text for part in candidate.content.parts if hasattr(part, 'text') and part.text])
+                except:
+                    pass
+        
+        # If still no response and finish_reason is MAX_TOKENS, try alternative extraction
+        if not full_response:
+            if finish_reason == 2:  # MAX_TOKENS - partial content might still be available
+                # Try to extract from candidate directly
+                try:
+                    if hasattr(candidate, 'content') and candidate.content:
+                        if hasattr(candidate.content, 'parts'):
+                            parts_text = []
+                            for part in candidate.content.parts:
+                                if hasattr(part, 'text') and part.text:
+                                    parts_text.append(part.text)
+                            if parts_text:
+                                full_response = "".join(parts_text)
+                except:
+                    pass
+            
+            # If still no response, raise exception
+            if not full_response:
+                if finish_reason == 2:
+                    # For MAX_TOKENS, warn but don't fail - use template fallback
+                    print(f"⚠️ Warning: Response hit max tokens limit (finish_reason: {finish_reason}). Using template fallback.")
+                    return None, None
+                else:
+                    raise Exception(f"Could not extract text. Finish reason: {finish_reason}")
         
         # Extract HTML and CSS
         html_content = extract_html_from_response(full_response)

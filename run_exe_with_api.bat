@@ -10,23 +10,53 @@ cd /d "%~dp0"
 REM Deteksi EXE (prioritas: nama baru -> nama lama)
 set "EXE_NAME="
 set "EXE_PATH="
+set "SCRIPT_DIR=%~dp0"
+
+REM Normalize path (remove trailing backslash)
+if "%SCRIPT_DIR:~-1%"=="\" set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 
 REM Cek nama baru di dist folder
-if exist "dist\Gemini-Project-Generator.exe" (
+if exist "%SCRIPT_DIR%\dist\Gemini-Project-Generator.exe" (
     set "EXE_NAME=Gemini-Project-Generator.exe"
-    set "EXE_PATH=dist\Gemini-Project-Generator.exe"
-) else if exist "Gemini-Project-Generator.exe" (
-    set "EXE_NAME=Gemini-Project-Generator.exe"
-    set "EXE_PATH=Gemini-Project-Generator.exe"
-) else if exist "dist\AI-Daily-Summary.exe" (
-    REM Fallback ke nama lama
-    set "EXE_NAME=AI-Daily-Summary.exe"
-    set "EXE_PATH=dist\AI-Daily-Summary.exe"
-) else if exist "AI-Daily-Summary.exe" (
-    REM Fallback ke nama lama
-    set "EXE_NAME=AI-Daily-Summary.exe"
-    set "EXE_PATH=AI-Daily-Summary.exe"
+    set "EXE_PATH=%SCRIPT_DIR%\dist\Gemini-Project-Generator.exe"
+    goto :found
 )
+
+REM Cek nama baru di root
+if exist "%SCRIPT_DIR%\Gemini-Project-Generator.exe" (
+    set "EXE_NAME=Gemini-Project-Generator.exe"
+    set "EXE_PATH=%SCRIPT_DIR%\Gemini-Project-Generator.exe"
+    goto :found
+)
+
+REM Cek nama lama di dist folder (legacy)
+if exist "%SCRIPT_DIR%\dist\AI-Daily-Summary.exe" (
+    set "EXE_NAME=AI-Daily-Summary.exe"
+    set "EXE_PATH=%SCRIPT_DIR%\dist\AI-Daily-Summary.exe"
+    goto :found
+)
+
+REM Cek nama lama di root (legacy)
+if exist "%SCRIPT_DIR%\AI-Daily-Summary.exe" (
+    set "EXE_NAME=AI-Daily-Summary.exe"
+    set "EXE_PATH=%SCRIPT_DIR%\AI-Daily-Summary.exe"
+    goto :found
+)
+
+REM Jika tidak ditemukan, tampilkan error
+echo [ERROR] EXE not found!
+echo.
+echo Searched locations:
+echo   - %SCRIPT_DIR%\dist\Gemini-Project-Generator.exe
+echo   - %SCRIPT_DIR%\Gemini-Project-Generator.exe
+echo   - %SCRIPT_DIR%\dist\AI-Daily-Summary.exe (legacy)
+echo   - %SCRIPT_DIR%\AI-Daily-Summary.exe (legacy)
+echo.
+echo Please build EXE first with: build.bat
+pause
+exit /b 1
+
+:found
 
 if defined EXE_PATH (
     echo Starting Gemini Project Generator...
