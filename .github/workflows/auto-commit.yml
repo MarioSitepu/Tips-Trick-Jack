@@ -68,8 +68,8 @@ jobs:
           
           # Push ke branch yang sama (auto push)
           # Cek apakah PAT tersedia (opsional), jika tidak pakai GITHUB_TOKEN
-          # Note: Warning tentang GITHUB_TOKEN_PAT bisa diabaikan - workflow tetap berjalan
-          PAT_TOKEN="${{ secrets.GITHUB_TOKEN_PAT }}"
+          # Support multiple secret names: GITHUBTOKENPAT, GITHUB_TOKEN_PAT, atau GITHUB_TOKEN
+          PAT_TOKEN="${{ secrets.GITHUBTOKENPAT || secrets.GITHUB_TOKEN_PAT }}"
           if [ -n "$PAT_TOKEN" ] && [ "$PAT_TOKEN" != "" ]; then
             PUSH_TOKEN="$PAT_TOKEN"
             echo "Using Fine-grained PAT for push"

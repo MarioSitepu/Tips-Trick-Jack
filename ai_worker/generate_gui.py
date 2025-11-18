@@ -55,10 +55,12 @@ class AIWorker:
         self.theme = theme
         self.style = style
         self.auto_push = auto_push
-        self.github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
+        self.github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT") or os.getenv("GITHUBTOKENPAT")
         self.push_to_showcase = push_to_showcase
+        # Folder showcase ada di parent directory: ../ai-showcase/ (sama level dengan AiCommitBot)
+        # Repo showcase: https://github.com/MarioSitepu/Jack-s-Cards
         self.showcase_repo_path = showcase_repo_path or os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
-        self.showcase_repo_url = showcase_repo_url or os.getenv("SHOWCASE_REPO_URL")
+        self.showcase_repo_url = showcase_repo_url or os.getenv("SHOWCASE_REPO_URL", "https://github.com/MarioSitepu/Jack-s-Cards.git")
         self.showcase_branch = showcase_branch or os.getenv("SHOWCASE_BRANCH", "main")
         
     def _get_data_dir(self):
@@ -443,10 +445,10 @@ class SystemTrayApp:
     def __init__(self, auto_push=False, github_token=None):
         # Get auto_push dari environment atau parameter
         auto_push = auto_push or os.getenv("AUTO_PUSH", "false").lower() == "true"
-        github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT")
+        github_token = github_token or os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN_PAT") or os.getenv("GITHUBTOKENPAT")
         push_to_showcase = os.getenv("PUSH_TO_SHOWCASE", "false").lower() == "true"
         showcase_repo_path = os.getenv("SHOWCASE_REPO_PATH", "../ai-showcase")
-        showcase_repo_url = os.getenv("SHOWCASE_REPO_URL")
+        showcase_repo_url = os.getenv("SHOWCASE_REPO_URL", "https://github.com/MarioSitepu/Jack-s-Cards.git")
         showcase_branch = os.getenv("SHOWCASE_BRANCH", "main")
         
         self.worker = AIWorker(

@@ -2,60 +2,81 @@
 
 Panduan lengkap untuk setup repo showcase terpisah dan website gallery untuk menampilkan semua hasil generate AI.
 
+> 💡 **Struktur Folder:** Generator dan showcase sudah dipisah menjadi 2 folder. Lihat [FOLDER_STRUCTURE.md](FOLDER_STRUCTURE.md) untuk detail struktur.
+
 ## 🎯 Konsep
 
 Dengan fitur ini, setiap project yang di-generate akan:
-1. ✅ Disimpan di repo utama (seperti biasa)
+1. ✅ Disimpan di repo utama (seperti biasa, opsional)
 2. ✅ **OTOMATIS di-copy ke repo showcase terpisah**
 3. ✅ **Website gallery otomatis di-generate** untuk menampilkan semua project
 4. ✅ **Auto push ke repo showcase** (jika enabled)
 
-## 📋 Keuntungan
+## 📋 Keuntungan Repo Terpisah
 
-- ✅ **Repo terpisah** - Showcase repo tidak mengganggu repo utama
+- ✅ **Separation of Concerns** - Generator dan showcase terpisah
+- ✅ **Repo showcase clean** - Hanya berisi projects + gallery (tidak ada source code)
+- ✅ **GitHub Pages optimal** - Deploy lebih ringan & cepat
+- ✅ **Portfolio ready** - Bisa share showcase tanpa expose source code
+- ✅ **Professional** - Struktur lebih rapi dan terorganisir
+- ✅ **History commit bersih** - Generator commits terpisah dari showcase commits
 - ✅ **Website gallery otomatis** - Index.html otomatis di-generate dengan semua project
-- ✅ **Bisa di-deploy ke GitHub Pages** - Langsung jadi website portfolio
-- ✅ **Organized** - Semua project terorganisir dengan baik
 - ✅ **Auto-update** - Gallery otomatis update setiap ada project baru
 
 ---
 
 ## 🚀 Setup Showcase Repo
 
-### Step 1: Buat Repo Showcase di GitHub
+### Step 1: Folder Showcase Sudah Dibuat ✅
 
-1. **Buat repository baru di GitHub:**
-   - Nama: `ai-showcase` (atau nama lain sesuai keinginan)
-   - Visibility: Public (untuk GitHub Pages) atau Private
-   - **JANGAN** initialize dengan README, .gitignore, atau license
+Folder `ai-showcase/` sudah dibuat di parent directory (sama level dengan `AiCommitBot/`).
 
-2. **Copy URL repository:**
-   - HTTPS: `https://github.com/username/ai-showcase.git`
-   - SSH: `git@github.com:username/ai-showcase.git`
+**Struktur:**
+```
+Documents/Belajar/
+├─ AiCommitBot/          ← Generator
+└─ ai-showcase/          ← Showcase (sudah dibuat)
+```
 
-### Step 2: Konfigurasi Environment Variables
+### Step 2: Repo Showcase di GitHub ✅
+
+Repo showcase sudah dibuat di GitHub:
+- **URL Repository:** `https://github.com/MarioSitepu/Jack-s-Cards`
+- **HTTPS:** `https://github.com/MarioSitepu/Jack-s-Cards.git`
+- **SSH:** `git@github.com:MarioSitepu/Jack-s-Cards.git`
+
+3. **Initialize Git di folder showcase (opsional):**
+   ```bash
+   cd ../ai-showcase
+   git init
+   git remote add origin https://github.com/username/ai-showcase.git
+   ```
+   
+   Atau biarkan kosong, akan di-clone otomatis jika `SHOWCASE_REPO_URL` diset.
+
+### Step 3: Konfigurasi Environment Variables
 
 **Opsi A: Via Environment Variables (Recommended)**
 
 ```bash
 # Windows (PowerShell)
 $env:PUSH_TO_SHOWCASE = "true"
-$env:SHOWCASE_REPO_PATH = "../ai-showcase"
-$env:SHOWCASE_REPO_URL = "https://github.com/username/ai-showcase.git"
+$env:SHOWCASE_REPO_PATH = "../ai-showcase"  # Default: sama level dengan AiCommitBot/
+$env:SHOWCASE_REPO_URL = "https://github.com/MarioSitepu/Jack-s-Cards.git"
 $env:SHOWCASE_BRANCH = "main"
 $env:GITHUB_TOKEN = "your-github-token"
 
 # Windows (CMD)
 set PUSH_TO_SHOWCASE=true
 set SHOWCASE_REPO_PATH=../ai-showcase
-set SHOWCASE_REPO_URL=https://github.com/username/ai-showcase.git
+set SHOWCASE_REPO_URL=https://github.com/MarioSitepu/Jack-s-Cards.git
 set SHOWCASE_BRANCH=main
 set GITHUB_TOKEN=your-github-token
 
 # Linux/Mac
 export PUSH_TO_SHOWCASE=true
 export SHOWCASE_REPO_PATH=../ai-showcase
-export SHOWCASE_REPO_URL=https://github.com/username/ai-showcase.git
+export SHOWCASE_REPO_URL=https://github.com/MarioSitepu/Jack-s-Cards.git
 export SHOWCASE_BRANCH=main
 export GITHUB_TOKEN=your-github-token
 ```
@@ -65,16 +86,18 @@ export GITHUB_TOKEN=your-github-token
 ```python
 # Konfigurasi Showcase Repo
 PUSH_TO_SHOWCASE = True  # Set True untuk push ke repo showcase terpisah
-SHOWCASE_REPO_PATH = "../ai-showcase"  # Path ke repo showcase lokal
-SHOWCASE_REPO_URL = "https://github.com/username/ai-showcase.git"  # URL repo showcase
+SHOWCASE_REPO_PATH = "../ai-showcase"  # Path ke folder showcase lokal (sama level dengan AiCommitBot)
+SHOWCASE_REPO_URL = "https://github.com/MarioSitepu/Jack-s-Cards.git"  # URL repo showcase GitHub
 SHOWCASE_BRANCH = "main"  # Branch untuk showcase repo
 ```
+
+**Note:** Default path `../ai-showcase` berarti folder showcase ada di parent directory, sama level dengan folder `AiCommitBot/`.
 
 **Opsi C: Edit File `ai_worker/generate_gui.py` (untuk GUI version)**
 
 Sama seperti di atas, atau set via environment variables.
 
-### Step 3: Setup GitHub Token
+### Step 4: Setup GitHub Token
 
 **Buat Personal Access Token (PAT):**
 
@@ -160,7 +183,7 @@ Setelah repo showcase di-push ke GitHub, Anda bisa deploy ke GitHub Pages:
 ### Step 2: Akses Website
 
 Website akan tersedia di:
-- `https://username.github.io/ai-showcase/`
+- `https://mariositepu.github.io/Jack-s-Cards/`
 
 **Note:** Butuh beberapa menit untuk pertama kali deploy.
 
@@ -257,7 +280,7 @@ grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));  # Lebih besar
 - Set `SHOWCASE_REPO_URL` di environment variable atau di code
 - Atau clone repo showcase manual:
   ```bash
-  git clone https://github.com/username/ai-showcase.git ../ai-showcase
+  git clone https://github.com/MarioSitepu/Jack-s-Cards.git ../ai-showcase
   ```
 
 ### Error: "Failed to clone showcase repo"
@@ -292,7 +315,7 @@ grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));  # Lebih besar
 
 ## 📋 Checklist Setup
 
-- [ ] Repo showcase sudah dibuat di GitHub
+- [x] Repo showcase sudah dibuat di GitHub (https://github.com/MarioSitepu/Jack-s-Cards)
 - [ ] `PUSH_TO_SHOWCASE = True` (atau via env var)
 - [ ] `SHOWCASE_REPO_URL` sudah diset
 - [ ] `GITHUB_TOKEN` sudah diset
