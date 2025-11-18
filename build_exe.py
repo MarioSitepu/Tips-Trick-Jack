@@ -45,12 +45,16 @@ def build_exe():
     import platform
     separator = ";" if platform.system() == "Windows" else ":"
     
+    # Check if icon exists
+    icon_path = script_dir / "icon.ico"
+    icon_arg = f"--icon={icon_path}" if icon_path.exists() else "--icon=NONE"
+    
     cmd = [
         "pyinstaller",
-        "--name=AI-Daily-Summary",
+        "--name=Gemini-Project-Generator",
         "--onefile",  # Single executable file
         "--windowed",  # No console window (GUI only)
-        "--icon=NONE",  # You can add --icon=icon.ico if you have one
+        icon_arg,  # Use icon.ico if available
         f"--add-data=data{separator}data",  # Include data folder
         "--hidden-import=pystray",
         "--hidden-import=PIL",
@@ -70,8 +74,8 @@ def build_exe():
         print("\n" + "="*50)
         print("Build successful!")
         print("="*50)
-        print(f"Executable location: {script_dir / 'dist' / 'AI-Daily-Summary.exe'}")
-        print("\nYou can now run AI-Daily-Summary.exe")
+        print(f"Executable location: {script_dir / 'dist' / 'Gemini-Project-Generator.exe'}")
+        print("\nYou can now run Gemini-Project-Generator.exe")
         return True
     except subprocess.CalledProcessError as e:
         print(f"Build failed: {e}")
@@ -80,7 +84,7 @@ def build_exe():
 def main():
     """Main function"""
     print("="*50)
-    print("AI Daily Summary Generator - EXE Builder")
+    print("Gemini Project Generator - EXE Builder")
     print("="*50)
     
     # Check PyInstaller
@@ -98,7 +102,7 @@ def main():
     if build_exe():
         print("\n✅ Build completed successfully!")
         print("\nNext steps:")
-        print("1. Find AI-Daily-Summary.exe in the 'dist' folder")
+        print("1. Find Gemini-Project-Generator.exe in the 'dist' folder")
         print("2. Copy it to your desired location")
         print("3. Make sure 'data' folder exists in the same directory")
         print("4. Set GEMINI_API_KEY environment variable (jika pakai AI)")

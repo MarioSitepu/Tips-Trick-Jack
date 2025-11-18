@@ -1,7 +1,7 @@
 @echo off
 REM Build script untuk Windows - Convert ke EXE
 echo ========================================
-echo AI Daily Summary Generator - EXE Builder
+echo Gemini Project Generator - EXE Builder
 echo ========================================
 echo.
 

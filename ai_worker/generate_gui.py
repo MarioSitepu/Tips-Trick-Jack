@@ -1,6 +1,7 @@
 """
-AI Daily Summary Generator - GUI Version dengan System Tray
+Gemini Project Generator - GUI Version dengan System Tray
 Berjalan di background dengan icon di system tray
+Generate AI projects menggunakan Google Gemini Flash 2.0
 """
 import time
 import threading
@@ -464,19 +465,43 @@ class SystemTrayApp:
         self.status_log = []
         
     def create_icon_image(self):
-        """Create icon image for system tray"""
-        # Create a simple icon
-        image = Image.new('RGB', (64, 64), color='white')
+        """Create icon image for system tray with Gemini theme"""
+        # Try to load custom icon first
+        script_dir = Path(__file__).parent.parent
+        tray_icon_path = script_dir / "tray_icon.png"
+        icon_path = script_dir / "icon.png"
+        
+        if tray_icon_path.exists():
+            return Image.open(tray_icon_path)
+        elif icon_path.exists():
+            icon = Image.open(icon_path)
+            return icon.resize((64, 64), Image.Resampling.LANCZOS)
+        
+        # Fallback: Create icon with Gemini theme
+        image = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         
-        # Draw a simple robot/AI icon
-        # Head
-        draw.ellipse([20, 10, 44, 34], fill='blue', outline='black', width=2)
-        # Body
-        draw.rectangle([18, 34, 46, 54], fill='blue', outline='black', width=2)
-        # Eyes
-        draw.ellipse([24, 18, 28, 22], fill='white')
-        draw.ellipse([36, 18, 40, 22], fill='white')
+        # Background gradient circle (purple to pink)
+        draw.ellipse([4, 4, 60, 60], fill=(147, 51, 255), outline=(255, 20, 147), width=2)
+        
+        # Gemini symbol (two connected circles)
+        center_x, center_y = 32, 32
+        circle_radius = 12
+        offset = 8
+        
+        # Left circle (purple)
+        left_circle = [center_x - offset - circle_radius, center_y - circle_radius,
+                       center_x - offset + circle_radius, center_y + circle_radius]
+        draw.ellipse(left_circle, fill=(147, 51, 255), outline=(255, 255, 255), width=1)
+        
+        # Right circle (pink)
+        right_circle = [center_x + offset - circle_radius, center_y - circle_radius,
+                        center_x + offset + circle_radius, center_y + circle_radius]
+        draw.ellipse(right_circle, fill=(255, 20, 147), outline=(255, 255, 255), width=1)
+        
+        # Connection line
+        draw.line([center_x - offset, center_y, center_x + offset, center_y], 
+                  fill=(255, 255, 255), width=2)
         
         return image
     
@@ -494,7 +519,7 @@ class SystemTrayApp:
             return
         
         root = tk.Tk()
-        root.title("AI Worker Status")
+        root.title("Gemini Project Generator - Status")
         root.geometry("600x400")
         
         # Status info
